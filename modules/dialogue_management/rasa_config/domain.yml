@@ -1,0 +1,72 @@
+version: "3.1"
+
+intents:
+  - greet
+  - goodbye
+  - affirm
+  - deny
+  - mood_great
+  - mood_unhappy
+  - thanks
+  - help
+  - anxiety
+  - depression
+  - suicidal
+  - resources
+  - coping
+  - chitchat
+
+entities:
+  - emotion
+
+slots:
+  user_emotion:
+    type: text
+    influence_conversation: true
+  severity:
+    type: text
+    influence_conversation: true
+
+responses:
+  utter_greet:
+    - text: "Hello! I'm your mental health support bot. How can I help you today?"
+
+  utter_goodbye:
+    - text: "Goodbye! Take care and I am here if you need me again."
+
+  utter_thanks:
+    - text: "You're welcome. Is there anything else I can help you with today?"
+
+  utter_help:
+    - text: "I'm here to provide emotional support and resources. What specifically are you looking for help with?"
+
+  utter_anxiety:
+    - text: "It sounds like you're feeling anxious. Would you like to try a simple breathing exercise to help calm your mind?"
+
+  utter_depression:
+    - text: "I'm sorry you're feeling this way. Depression can make everything feel more difficult. Would you like to talk about it?"
+
+  utter_suicidal:
+    - text: "I'm very concerned about what you're sharing. Your life matters, and there are people who can help you through this difficult time. The National Suicide Prevention Lifeline is available 24/7 at 1-800-273-8255. Would you be willing to call them now?"
+
+  utter_resources:
+    - text: "Here are some mental health resources that might be helpful:\n- National Alliance on Mental Illness (NAMI): nami.org\n- Mental Health America: mentalhealthamerica.net\n- Psychology Today Therapist Finder: psychologytoday.com/us/therapists\nIs there a specific type of resource you're looking for?"
+
+  utter_coping:
+    - text: "There are many coping strategies that can help with difficult emotions. Some options include deep breathing, mindfulness, physical activity, or creative expression. Would you like to explore any of these further?"
+
+  utter_chitchat:
+    - text: "I'm happy to chat! What would you like to talk about?"
+
+  utter_ask_howdoing:
+    - text: "How are you feeling today?"
+
+  utter_iamabot:
+    - text: "I am a bot, powered by Rasa."
+
+  utter_default:
+    - text: "I'm not sure I understand. How else can I help you?"
+
+session_config:
+  session_expiration_time: 60
+  carry_over_slots_to_new_session: true
