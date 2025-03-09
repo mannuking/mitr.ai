@@ -1,0 +1,14 @@
+streamlit
+google-generativeai
+pymongo
+pandas
+plotly
+python-dotenv
+streamlit-lottie
+sounddevice
+opencv-python
+soundfile
+matplotlib
+faiss-cpu
+sentence-transformers
+PyMuPDF

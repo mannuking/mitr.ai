@@ -18,7 +18,7 @@ from modules.emotion_recognition.facial_expression_recognition import FacialEmot
 from modules.fusion.multimodal_fusion import MultimodalFusion
 
 # Import needs assessment modules
-from modules.needs_assessment.intent_recognition import IntentRecognizer
+# from modules.needs_assessment.intent_recognition import IntentRecognizer # Removed Rasa
 from modules.needs_assessment.severity_assessment import SeverityAssessor
 
 # Import dialogue management module
@@ -30,70 +30,23 @@ class EmotionalChatbot:
     """
     
     def __init__(self, config_path=None):
-        """Initialize the EmotionalChatbot with configuration."""
-        # Set device
-        device = 'cuda' if torch.cuda.is_available() else 'mps' if torch.backends.mps.is_available() else 'cpu'
-        print(f"Device set to use {device}")
+        """
+        Initialize the EmotionalChatbot with configuration.
         
-        try:
-            self.config = self.load_config(config_path)
-            print("Using provided configuration.")
-        except:
-            self.config = {}
-            print("Using default configuration.")
-        
-        # Initialize other components with error handling
-        try:
-            self._initialize_components()
-            print("Components initialized successfully.")
-        except Exception as e:
-            print(f"Warning: Some components failed to initialize - {e}")
-            self._initialize_fallback_components()
-    
-    def _initialize_components(self):
-        self.conversation_history = []
-        self.response_templates = {
-            'greeting': [
-                "Hello! How are you feeling today?",
-                "Hi there! What's on your mind?",
-                "Welcome! How can I help you today?",
-                "Greetings! How are you doing?"
-            ],
-            'unknown': [
-                "Could you elaborate on that?",
-                "Tell me more about what's troubling you.",
-                "I'm here to listen. Could you share more details?",
-                "Would you mind explaining that in different words?"
-            ],
-            'farewell': [
-                "Take care! Remember, I'm here if you need to talk.",
-                "Goodbye for now. Feel free to return anytime.",
-                "Wishing you well! Come back whenever you need support."
-            ]
-        }
-        self.last_response = None
-        self.greeting_patterns = {'hey', 'hi', 'hello', 'greetings', 'good morning', 'good afternoon', 'good evening'}
+        Args:
+            config_path (str): Path to configuration file
+        """
+        # Load configuration
+        self.config = self.load_config(config_path)
         
         # Initialize data preprocessing modules
         self.text_preprocessor = TextPreprocessor()
-        
-        # Initialize audio preprocessor with fallback
-        try:
-            self.audio_preprocessor = AudioPreprocessor(
-                google_credentials_path=self.config.get('google_credentials_path')
-            )
-        except Exception as e:
-            print(f"Warning: Audio preprocessing disabled - {e}")
-            self.audio_preprocessor = None
-        
-        # Initialize image preprocessor with fallback
-        try:
-            self.image_preprocessor = ImagePreprocessor(
-                google_credentials_path=self.config.get('google_credentials_path')
-            )
-        except Exception as e:
-            print(f"Warning: Image preprocessing disabled - {e}")
-            self.image_preprocessor = None
+        self.audio_preprocessor = AudioPreprocessor(
+            google_credentials_path=self.config.get('google_credentials_path')
+        )
+        self.image_preprocessor = ImagePreprocessor(
+            google_credentials_path=self.config.get('google_credentials_path')
+        )
         
         # Initialize emotion recognition modules
         self.text_emotion_recognizer = TextEmotionRecognizer(
@@ -112,10 +65,10 @@ class EmotionalChatbot:
         )
         
         # Initialize needs assessment modules
-        self.intent_recognizer = IntentRecognizer(
-            model_path=self.config.get('intent_model_path'),
-            config_path=self.config.get('rasa_config_path')
-        )
+        # self.intent_recognizer = IntentRecognizer( # Removed Rasa
+        #     model_path=self.config.get('intent_model_path'),
+        #     config_path=self.config.get('rasa_config_path')
+        # )
         self.severity_assessor = SeverityAssessor()
         
         # Initialize dialogue management module
@@ -129,96 +82,7 @@ class EmotionalChatbot:
             'session_id': self.generate_session_id(),
             'conversation_history': [],
             'detected_emotions': [],
-            'detected_intents': [],
-            'severity_history': [],
-            'user_preferences': {},
-            'start_time': datetime.now(),
-            'last_activity': datetime.now()
-        }
-        
-        print("Emotional Chatbot initialized successfully.")
-    
-    def _initialize_fallback_components(self):
-        # Fallback initialization for components that failed to initialize
-        self.conversation_history = []
-        self.response_templates = {
-            'greeting': [
-                "Hello! How are you feeling today?",
-                "Hi there! What's on your mind?",
-                "Welcome! How can I help you today?",
-                "Greetings! How are you doing?"
-            ],
-            'unknown': [
-                "Could you elaborate on that?",
-                "Tell me more about what's troubling you.",
-                "I'm here to listen. Could you share more details?",
-                "Would you mind explaining that in different words?"
-            ],
-            'farewell': [
-                "Take care! Remember, I'm here if you need to talk.",
-                "Goodbye for now. Feel free to return anytime.",
-                "Wishing you well! Come back whenever you need support."
-            ]
-        }
-        self.last_response = None
-        self.greeting_patterns = {'hey', 'hi', 'hello', 'greetings', 'good morning', 'good afternoon', 'good evening'}
-        
-        # Initialize data preprocessing modules
-        self.text_preprocessor = TextPreprocessor()
-        
-        # Initialize audio preprocessor with fallback
-        try:
-            self.audio_preprocessor = AudioPreprocessor(
-                google_credentials_path=self.config.get('google_credentials_path')
-            )
-        except Exception as e:
-            print(f"Warning: Audio preprocessing disabled - {e}")
-            self.audio_preprocessor = None
-        
-        # Initialize image preprocessor with fallback
-        try:
-            self.image_preprocessor = ImagePreprocessor(
-                google_credentials_path=self.config.get('google_credentials_path')
-            )
-        except Exception as e:
-            print(f"Warning: Image preprocessing disabled - {e}")
-            self.image_preprocessor = None
-        
-        # Initialize emotion recognition modules
-        self.text_emotion_recognizer = TextEmotionRecognizer(
-            model_path=self.config.get('text_emotion_model_path')
-        )
-        self.voice_emotion_recognizer = VoiceEmotionRecognizer(
-            model_path=self.config.get('voice_emotion_model_path')
-        )
-        self.facial_emotion_recognizer = FacialEmotionRecognizer(
-            model_path=self.config.get('facial_emotion_model_path')
-        )
-        
-        # Initialize fusion module
-        self.emotion_fusion = MultimodalFusion(
-            model_path=self.config.get('fusion_model_path')
-        )
-        
-        # Initialize needs assessment modules
-        self.intent_recognizer = IntentRecognizer(
-            model_path=self.config.get('intent_model_path'),
-            config_path=self.config.get('rasa_config_path')
-        )
-        self.severity_assessor = SeverityAssessor()
-        
-        # Initialize dialogue management module
-        self.response_generator = ResponseGenerator(
-            response_repository_path=self.config.get('response_repository_path')
-        )
-        
-        # Initialize conversation context
-        self.conversation_context = {
-            'user_id': None,
-            'session_id': self.generate_session_id(),
-            'conversation_history': [],
-            'detected_emotions': [],
-            'detected_intents': [],
+            'detected_intents': [], # Removed Rasa
             'severity_history': [],
             'user_preferences': {},
             'start_time': datetime.now(),
@@ -303,7 +167,8 @@ class EmotionalChatbot:
             text_emotions = self.text_emotion_recognizer.predict_emotion(preprocessed_text)
         
         # Recognize intent
-        intent_result = self.intent_recognizer.predict_intent(text)
+        # intent_result = self.intent_recognizer.predict_intent(text) # Removed Rasa
+        intent_result = None # Removed Rasa
         
         return preprocessed_text, text_emotions, intent_result
     
@@ -456,12 +321,11 @@ class EmotionalChatbot:
         
         return severity_assessment
     
-    def generate_response(self, intent_result, emotions, severity_assessment):
+    def generate_response(self, emotions, severity_assessment): # Removed intent_result
         """
-        Generate an appropriate response based on intent, emotions, and severity.
+        Generate an appropriate response based on emotions and severity.
         
         Args:
-            intent_result (dict): Intent recognition result
             emotions (dict): Detected emotions
             severity_assessment (dict): Severity assessment
             
@@ -469,7 +333,8 @@ class EmotionalChatbot:
             str: Generated response
         """
         # Extract intent name
-        intent_name = intent_result['intent']['name']
+        # intent_name = intent_result['intent']['name'] # Removed Rasa
+        intent_name = None # Removed Rasa
         
         # Extract dominant emotion
         dominant_emotion = None
@@ -489,7 +354,7 @@ class EmotionalChatbot:
         return response
     
     def update_conversation_context(self, user_input, text_emotions, voice_emotions, facial_emotions, 
-                                   fused_emotions, intent_result, severity_assessment, response):
+                                   fused_emotions, severity_assessment, response): # Removed intent_result
         """
         Update the conversation context with new information.
         
@@ -524,12 +389,12 @@ class EmotionalChatbot:
             })
         
         # Add to detected intents
-        if intent_result:
-            self.conversation_context['detected_intents'].append({
-                'intent': intent_result['intent']['name'],
-                'confidence': intent_result['intent']['confidence'],
-                'timestamp': datetime.now().isoformat()
-            })
+        # if intent_result: # Removed Rasa
+        #     self.conversation_context['detected_intents'].append({
+        #         'intent': intent_result['intent']['name'],
+        #         'confidence': intent_result['intent']['confidence'],
+        #         'timestamp': datetime.now().isoformat()
+        #     })
         
         # Add to severity history
         if severity_assessment:
@@ -618,10 +483,10 @@ class EmotionalChatbot:
         fused_emotions = self.fuse_emotions(text_emotions, voice_emotions, facial_emotions)
         
         # Assess user needs
-        severity_assessment = self.assess_user_needs(text, fused_emotions, intent_result)
+        severity_assessment = self.assess_user_needs(text, fused_emotions, None) # Removed intent_result
         
         # Generate response
-        response = self.generate_response(intent_result, fused_emotions, severity_assessment)
+        response = self.generate_response(fused_emotions, severity_assessment) # Removed intent_result
         
         # Update conversation context
         self.update_conversation_context(
@@ -630,8 +495,7 @@ class EmotionalChatbot:
             voice_emotions=voice_emotions,
             facial_emotions=facial_emotions,
             fused_emotions=fused_emotions,
-            intent_result=intent_result,
-            severity_assessment=severity_assessment,
+            severity_assessment=severity_assessment, # Removed intent_result
             response=response
         )
         
@@ -653,8 +517,8 @@ class EmotionalChatbot:
         turns = len(self.conversation_context['conversation_history'])
         
         # Get most frequent intent
-        intents = [item['intent'] for item in self.conversation_context['detected_intents']]
-        most_frequent_intent = max(set(intents), key=intents.count) if intents else None
+        # intents = [item['intent'] for item in self.conversation_context['detected_intents']] # Removed Rasa
+        most_frequent_intent = None # Removed Rasa
         
         # Get most frequent emotion
         emotions = []

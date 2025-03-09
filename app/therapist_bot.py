@@ -14,9 +14,6 @@ import matplotlib.pyplot as plt
 # Add parent directory to path to import modules
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-# Import chatbot and config
-from chatbot import EmotionalChatbot
-from config import CHATBOT_CONFIG
 
 # Set page configuration
 st.set_page_config(
@@ -27,9 +24,11 @@ st.set_page_config(
 )
 
 # Function to initialize the chatbot
+from chatbot import EmotionalChatbot
+
 @st.cache_resource
 def initialize_chatbot():
-    return EmotionalChatbot(config_path=None)
+    return EmotionalChatbot(config_path=None)  # Changed class name here
 
 # Audio recording functions
 def record_audio(duration=5, sample_rate=22050):
@@ -248,8 +247,7 @@ if user_input:
             st.session_state.emotions = {
                 'text': latest_emotions.get('text'),
                 'voice': latest_emotions.get('voice'),
-                'facial': latest_emotions.get('facial'),
-                'fused': latest_emotions.get('fused')
+                'facial': latest_emotions.get('fused')
             }
         
         # Get severity from conversation context
